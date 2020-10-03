@@ -1,0 +1,2 @@
+rootProject.name='SmartTrafficSystemFyp'
+include ':app'
