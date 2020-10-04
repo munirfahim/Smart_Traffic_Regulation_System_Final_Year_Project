@@ -76,7 +76,7 @@
     <TextView
         android:id="@+id/Speed"
         android:layout_width="367dp"
-        android:layout_height="33dp"
+        android:layout_height="40dp"
         android:text=""
         android:textAlignment="center"
         android:textColor="#FFFFFF"
@@ -87,23 +87,54 @@
         app:layout_constraintHorizontal_bias="0.051"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.615" />
+        app:layout_constraintVertical_bias="0.720" />
 
     <TextView
-        android:id="@+id/Current_Location"
+        android:id="@+id/at_where"
         android:layout_width="367dp"
-        android:layout_height="63dp"
+        android:layout_height="110dp"
         android:text=""
         android:textAlignment="center"
         android:textColor="#FFFFFF"
-        android:textSize="20sp"
+        android:textSize="26sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.051"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.415" />
+        app:layout_constraintVertical_bias="0.895" />
+
+    <TextView
+        android:id="@+id/Current_Location"
+        android:layout_width="367dp"
+        android:layout_height="150dp"
+        android:text=""
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.051"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.550" />
+    <TextView
+        android:id="@+id/next_stop"
+        android:layout_width="367dp"
+        android:layout_height="63dp"
+        android:text="Next Stop: -"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.051"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.355" />
 
     <TextView
         android:id="@+id/bloodgrp"
@@ -196,19 +227,6 @@
         app:layout_constraintVertical_bias="0.85" />
 
 
-<!--    <fragment-->
-<!--        android:id="@+id/map_fragment"-->
-<!--        android:name="com.google.android.gms.maps.SupportMapFragment"-->
-<!--        android:layout_width="402dp"-->
-<!--        android:layout_height="365dp"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintHorizontal_bias="0.042"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintVertical_bias="0.665"-->
-<!--        tools:layout="@android:layout/activity_list_item" />-->
-
     <TextView
         android:id="@+id/fitness"
         android:layout_width="208dp"
@@ -251,21 +269,39 @@
 <!--        app:layout_constraintVertical_bias="1.0"-->
 <!--        app:srcCompat="@drawable/logo1" />-->
 
-        <TextView
-            android:id="@+id/violation"
-            android:layout_width="409dp"
-            android:layout_height="40dp"
-            android:text=""
-            android:textAlignment="center"
-            android:textColor="#FF0000"
-            android:textSize="32sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.532"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="1.0"
-             />
+    <TextView
+        android:id="@+id/violation"
+        android:layout_width="300dp"
+        android:layout_height="40dp"
+        android:text=""
+        android:textStyle="bold"
+        android:textAlignment="center"
+        android:textColor="#FF0000"
+        android:textSize="26sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.970"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        />
+
+    <TextView
+        android:id="@+id/speed_violation"
+        android:layout_width="350dp"
+        android:layout_height="40dp"
+        android:text=""
+        android:textStyle="bold"
+        android:textAlignment="center"
+        android:textColor="#FF0000"
+        android:textSize="26sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.050"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        />
 
 
 

@@ -1,3 +1,12 @@
+/*
+ Project Name: Smart Traffic Regulation System
+ Author: Sirajum Munir Fahim
+ Organization: American International University-Bangladesh
+ For Course: Software Project 2
+ Project Supervisor: Mohaimen-Bin-Noor
+ All rights reserved.
+ */
+
 package com.example.smarttrafficsystemfyp;
 
 public class Fine_Gen {

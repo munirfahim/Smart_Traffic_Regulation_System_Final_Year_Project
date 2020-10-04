@@ -1,17 +1,10 @@
 /*
- * Copyright 2019 The TensorFlow Authors. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ Project Name: Smart Traffic Regulation System
+ Author: Sirajum Munir Fahim
+ Organization: American International University-Bangladesh
+ For Course: Software Project 2
+ Project Supervisor: Mohaimen-Bin-Noor
+ All rights reserved.
  */
 
 package com.example.smarttrafficsystemfyp;
@@ -227,29 +220,17 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 List<MultiBoxTracker.TrackedRecognition> detections = tracker.getTrackedObjects();
                 for (int i = 0; i < size; i++) {
                   MultiBoxTracker.TrackedRecognition detection = detections.get(i);
-
-                  if (detection.title.contains("person")) {
-                    detected_flag = true;
-                    Fine_Gen new_fine = new Fine_Gen();
-                    new_fine.setViolation_type(detection.title);
-                    new_fine.setViolation_time(Calendar.getInstance().getTime().toString());
-                    Violation_Error = findViewById(R.id.violation);
-                    Violation_Error.setText("Door Violation");
-                    new CountDownTimer(20000, 1000) {
-
-                      public void onTick(long millisUntilFinished) {
-
-                        Violation_Error.setText("Door violation, waiting " + millisUntilFinished / 1000);
-                        //here you can have your logic to set text to edittext
-                      }
-
-                      public void onFinish() {
-                        Violation_Error.setText("");
-                        detected_flag = false;
-                      }
-
-                    }.start();
+                  if(atBusStop){
+                    if (detection.title.contains("bus")||detection.title.contains("truck")||detection.title.contains("car")) {
+                      detection(detection.title);
+                    }
                   }
+                  else{
+                    if (detection.title.contains("person")) {
+                        detection(detection.title);
+                    }
+                  }
+
                   //do something with i
                 }
               }
@@ -294,5 +275,28 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   @Override
   protected void setNumThreads(final int numThreads) {
     runInBackground(() -> detector.setNumThreads(numThreads));
+  }
+
+  public void detection(String detection_title){
+    detected_flag = true;
+    Fine_Gen new_fine = new Fine_Gen();
+    new_fine.setViolation_type(detection_title);
+    new_fine.setViolation_time(Calendar.getInstance().getTime().toString());
+    Violation_Error = findViewById(R.id.violation);
+    Violation_Error.setText("Door Violation");
+    new CountDownTimer(20000, 1000) {
+
+      public void onTick(long millisUntilFinished) {
+
+        Violation_Error.setText("Door violation, waiting " + millisUntilFinished / 1000);
+        //here you can have your logic to set text to edittext
+      }
+
+      public void onFinish() {
+        Violation_Error.setText("");
+        detected_flag = false;
+      }
+
+    }.start();
   }
 }

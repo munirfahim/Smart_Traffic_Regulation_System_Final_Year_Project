@@ -121,7 +121,7 @@ if(!empty($_GET['Dev_ID'])){
                     		 $resultl = mysqli_stmt_get_result($result);
                     		 if ($row = mysqli_fetch_assoc($resultl)){
                     		 	//Logging the other Driver out
-                    		 $sql="UPDATE logs SET TimeOut=CURTIME(), DateOut=CURDATE(),status=1 WHERE Dev_ID=?";
+                    		 $sql="UPDATE logs SET TimeOut=CURTIME(), DateOut=CURDATE(),status=1 WHERE Dev_ID=? and status<>1";
                         $result = mysqli_stmt_init($conn);
                         if (!mysqli_stmt_prepare($result, $sql)) {
                             echo "SQL_Error_insert_logout1";

@@ -1,17 +1,10 @@
 /*
- * Copyright 2019 The TensorFlow Authors. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ Project Name: Smart Traffic Regulation System
+ Author: Sirajum Munir Fahim
+ Organization: American International University-Bangladesh
+ For Course: Software Project 2
+ Project Supervisor: Mohaimen-Bin-Noor
+ All rights reserved.
  */
 
 package com.example.smarttrafficsystemfyp;
@@ -19,13 +12,9 @@ package com.example.smarttrafficsystemfyp;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.app.ProgressDialog;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
@@ -41,26 +30,20 @@ import android.media.ImageReader;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.IBinder;
 import android.os.Trace;
 import android.util.Size;
 import android.view.Surface;
 import android.view.View;
-import android.view.ViewTreeObserver;
-import android.view.WindowManager;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SwitchCompat;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
 import com.android.volley.Request;
@@ -75,7 +58,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import com.example.smarttrafficsystemfyp.env.ImageUtils;
 import com.example.smarttrafficsystemfyp.env.Logger;
@@ -85,6 +67,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
+import java.util.Calendar;
 import java.util.List;
 
 public abstract class CameraActivity extends AppCompatActivity
@@ -99,6 +82,7 @@ public abstract class CameraActivity extends AppCompatActivity
   private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
   public static final int DEFAULT_FASTEST_INTERVAL = 1000 * 5;
   public static final String BUS_DEVICE_ID = "123";
+  public static final int SPEED_LIMIT = 30;
   private static final int PERMISSIONS_FINE_LOCATION = 99;
   protected int previewWidth = 0;
   protected int previewHeight = 0;
@@ -115,63 +99,15 @@ public abstract class CameraActivity extends AppCompatActivity
   private TextView Bus_License, RP_exp, F_exp, D_Name, D_License, D_BG, D_Lic_Issue, Issue_Auth, Father_name, DOB, Vehicle_Type;
   private ImageView Driver_Image;
 
-  //  //Maps Codes with Speeding
-//  LocationService myService;
-//  static boolean status;
-//  LocationManager locationManager;
-  static TextView Cur_loc, time, speed, lat, lon, alt, accuracy;
-//  //Button start, pause, stop;
-//  static long startTime, endTime;
-//  //ImageView image;
-//  static ProgressDialog locate;
-//  static int p = 0;
-//
-//  private ServiceConnection sc = new ServiceConnection() {
-//    @Override
-//    public void onServiceConnected(ComponentName name, IBinder service) {
-//      LocationService.LocalBinder binder = (LocationService.LocalBinder) service;
-//      myService = binder.getService();
-//      status = true;
-//    }
-//
-//    @Override
-//    public void onServiceDisconnected(ComponentName name) {
-//      status = false;
-//    }
-//  };
-//
-//  void bindService() {
-//    if (status == true)
-//      return;
-//    Intent i = new Intent(getApplicationContext(), LocationService.class);
-//    bindService(i, sc, BIND_AUTO_CREATE);
-//    status = true;
-//    startTime = System.currentTimeMillis();
-//  }
-//
-//  void unbindService() {
-//    if (status == false)
-//      return;
-//    Intent i = new Intent(getApplicationContext(), LocationService.class);
-//    unbindService(sc);
-//    status = false;
-//  }
-//
-
-//  private LinearLayout bottomSheetLayout;
-//  private LinearLayout gestureLayout;
-//  private BottomSheetBehavior<LinearLayout> sheetBehavior;
-
-  protected TextView frameValueTextView, cropValueTextView, inferenceTimeTextView;
-  //  protected ImageView bottomSheetArrowImageView;
-//  private ImageView plusImageView, minusImageView;
-//  private SwitchCompat apiSwitchCompat;
-//  private TextView threadsTextView;
-  //This is the location
+  private TextView Cur_loc, speed, next_stop, current_time, speed_violation, at_where;
   LocationRequest locationRequest;
   LocationCallback locationCallback;
+  private boolean speedviolationdetected = false;
 
   FusedLocationProviderClient fusedLocationProviderClient;
+
+  String[] route_stops = new String[20];
+  public boolean atBusStop = false;
 
 
   @Override
@@ -181,10 +117,6 @@ public abstract class CameraActivity extends AppCompatActivity
 //    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
     setContentView(R.layout.activity_main);
-    //Toolbar toolbar = findViewById(R.id.toolbar);
-    //setSupportActionBar(toolbar);
-    //getSupportActionBar().setDisplayShowTitleEnabled(false);
-
     if (hasPermission()) {
       setFragment();
     } else {
@@ -207,28 +139,12 @@ public abstract class CameraActivity extends AppCompatActivity
 
     Cur_loc = (TextView) findViewById(R.id.Current_Location);
     speed = (TextView) findViewById(R.id.Speed);
+    next_stop = (TextView) findViewById(R.id.next_stop);
+    speed_violation = (TextView) findViewById(R.id.speed_violation);
+    at_where = (TextView) findViewById(R.id.at_where);
 
 
-//
-//    //Get location and speed setup
-//    checkGps();
-//    locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-//
-//    if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-//
-//      return;
-//    }
-//
-//
-//    if (status == false)
-//      //Here, the Location Service gets bound and the GPS Speedometer gets Active.
-//      bindService();
-//    locate = new ProgressDialog(CameraActivity.this);
-//    locate.setIndeterminate(true);
-//    locate.setCancelable(false);
-//    locate.setMessage("Getting Location...");
-//    locate.show();
-//
+    //Getting Location
 
     locationRequest = new LocationRequest();
 
@@ -295,6 +211,8 @@ public abstract class CameraActivity extends AppCompatActivity
                   else{
                     String Current_Driver = json.getString("C_Driver");
                     D_License.setText("License No: "+Current_Driver);
+                    String route_name = json.getString("route_name");
+                    getRouteDetails(route_name);
                     getDriverDetails(Current_Driver);
 
                     //Fetching Driver Details
@@ -316,71 +234,6 @@ public abstract class CameraActivity extends AppCompatActivity
     queue.add(stringRequest);
 
 
-
-    //threadsTextView = findViewById(R.id.threads);
-    //plusImageView = findViewById(R.id.plus);
-    //minusImageView = findViewById(R.id.minus);
-    //apiSwitchCompat = findViewById(R.id.api_info_switch);
-    //bottomSheetLayout = findViewById(R.id.bottom_sheet_layout);
-    //gestureLayout = findViewById(R.id.gesture_layout);
-    //sheetBehavior = BottomSheetBehavior.from(bottomSheetLayout);
-    //bottomSheetArrowImageView = findViewById(R.id.bottom_sheet_arrow);
-
-//    ViewTreeObserver vto = gestureLayout.getViewTreeObserver();
-//    vto.addOnGlobalLayoutListener(
-//        new ViewTreeObserver.OnGlobalLayoutListener() {
-//          @Override
-//          public void onGlobalLayout() {
-//            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-//              gestureLayout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-//            } else {
-//              gestureLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-//            }
-//            //                int width = bottomSheetLayout.getMeasuredWidth();
-//            int height = gestureLayout.getMeasuredHeight();
-//
-//            sheetBehavior.setPeekHeight(height);
-//          }
-//        });
-//    sheetBehavior.setHideable(false);
-
-//    sheetBehavior.setBottomSheetCallback(
-//        new BottomSheetBehavior.BottomSheetCallback() {
-//          @Override
-//          public void onStateChanged(@NonNull View bottomSheet, int newState) {
-//            switch (newState) {
-////              case BottomSheetBehavior.STATE_HIDDEN:
-////                break;
-////              case BottomSheetBehavior.STATE_EXPANDED:
-////                {
-////                  bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_down);
-////                }
-////                break;
-////              case BottomSheetBehavior.STATE_COLLAPSED:
-////                {
-////                  bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_up);
-////                }
-////                break;
-////              case BottomSheetBehavior.STATE_DRAGGING:
-////                break;
-////              case BottomSheetBehavior.STATE_SETTLING:
-////                bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_up);
-////                break;
-//              }
-//          }
-
-//          @Override
-//          public void onSlide(@NonNull View bottomSheet, float slideOffset) {}
-//        });
-
-//   frameValueTextView = findViewById(R.id.frame_info);
-//    cropValueTextView = findViewById(R.id.crop_info);
-//    inferenceTimeTextView = findViewById(R.id.inference_info);
-
-//    apiSwitchCompat.setOnCheckedChangeListener(this);
-//
-//    plusImageView.setOnClickListener(this);
-//    minusImageView.setOnClickListener(this);
   } //End of On create
 
   protected int[] getRgbBytes() {
@@ -721,45 +574,9 @@ public abstract class CameraActivity extends AppCompatActivity
     }
   }
 
-//  @Override
-//  public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//    setUseNNAPI(isChecked);
-//    if (isChecked) apiSwitchCompat.setText("NNAPI");
-//    else apiSwitchCompat.setText("TFLITE");
-//  }
-
   @Override
   public void onClick(View v) {
-//    if (v.getId() == R.id.plus) {
-//      String threads = threadsTextView.getText().toString().trim();
-//      int numThreads = Integer.parseInt(threads);
-//      if (numThreads >= 9) return;
-//      numThreads++;
-//      threadsTextView.setText(String.valueOf(numThreads));
-//      setNumThreads(numThreads);
-//    } else if (v.getId() == R.id.minus) {
-//      String threads = threadsTextView.getText().toString().trim();
-//      int numThreads = Integer.parseInt(threads);
-//      if (numThreads == 1) {
-//        return;
-//      }
-//      numThreads--;
-//      threadsTextView.setText(String.valueOf(numThreads));
-//      setNumThreads(numThreads);
-//    }
   }
-//
-//  protected void showFrameInfo(String frameInfo) {
-//    frameValueTextView.setText(frameInfo);
-//  }
-//
-//  protected void showCropInfo(String cropInfo) {
-//    cropValueTextView.setText(cropInfo);
-//  }
-//
-//  protected void showInference(String inferenceTime) {
-//    inferenceTimeTextView.setText(inferenceTime);
-//  }
 
   protected abstract void processImage();
 
@@ -815,6 +632,43 @@ public abstract class CameraActivity extends AppCompatActivity
     queue.add(stringRequest);
   }
 
+  private void getRouteDetails(String Route){
+    RequestQueue queue = Volley.newRequestQueue(this);
+    String url ="http://fahim.educationhost.cloud/GET_Route_API.php?Route="+Route;
+
+
+
+    // Request a string response from the provided URL.
+    StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+            new Response.Listener<String>() {
+              @Override
+              public void onResponse(String response) {
+                // Display the first 500 characters of the response string.
+
+                try {
+                  JSONObject json = new JSONObject(response);
+                  for(int i=0;i<7;i++){
+
+                    if(json.getString("Stop "+String.valueOf(i+1))!=null)
+                    route_stops[i] = json.getString("Stop "+String.valueOf(i+1));
+
+                  }
+
+                } catch (JSONException e) {
+                  e.printStackTrace();
+                }
+              }
+            }, new Response.ErrorListener() {
+      @Override
+      public void onErrorResponse(VolleyError error) {
+
+      }
+    });
+
+    // Add the request to the RequestQueue.
+    queue.add(stringRequest);
+  }
+
   public void updateGPS(){
     fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(CameraActivity.this);
     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -843,15 +697,55 @@ public abstract class CameraActivity extends AppCompatActivity
     try{
       List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
       Cur_loc.setText("Current location: "+ addresses.get(0).getAddressLine(0));
+      for(int i=0; route_stops[i]!=null; i++){
+        if(addresses.get(0).getAddressLine(0).contains(route_stops[i])){
+            atBusStop = true;
+            next_stop.setText("Next Stop: " + route_stops[i+1]);
+            at_where.setText("At Bus Stop, People allowed on Camera view, Stop safely before opening door");
+            at_where.setTextColor(Color.GREEN);
+          }
+        else if(addresses.get(0).getAddressLine(0).contains("Bus Stop")||addresses.get(0).getAddressLine(0).contains("Bus Stand")||addresses.get(0).getAddressLine(0).contains("Bus Station")){
+          atBusStop = true;
+          at_where.setText("At Bus Stop, People allowed on Camera view, Stop safely before opening door");
+          at_where.setTextColor(Color.GREEN);
+        }
+        else {
+          atBusStop = false;
+          at_where.setText("On-Route, No one allowed on Camera View");
+          at_where.setTextColor(Color.RED);
+
+        }
+      }
     }
     catch (Exception e){
       Cur_loc.setText("Current Location: "+ String.valueOf(location.getLatitude())+" "+ String.valueOf(location.getLongitude()));
+      atBusStop = false;
+      at_where.setText("On-Route, No one allowed on Camera View");
+      at_where.setTextColor(Color.RED);
     }
 
 
 
       if(location.hasSpeed()){
         speed.setText("Speed: "+String.valueOf(location.getSpeed()));
+        if(location.getSpeed()>SPEED_LIMIT && speedviolationdetected==false){
+          speedviolationdetected = true;
+          speed_violation.setText("Speed Violation Detected");
+          new CountDownTimer(10000, 1000) {
+
+            public void onTick(long millisUntilFinished) {
+
+              speed_violation.setText("Speed violation, waiting " + millisUntilFinished / 1000);
+              //here you can have your logic to set text to edittext
+            }
+
+            public void onFinish() {
+              speed_violation.setText("");
+              speedviolationdetected = false;
+            }
+
+          }.start();
+        }
       }
       else{
         speed.setText("Unavailable");
@@ -859,38 +753,4 @@ public abstract class CameraActivity extends AppCompatActivity
 
   }
 
-  //This method leads you to the alert dialog box.
-//  void checkGps() {
-//    locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-//
-//    if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-//
-//
-//      showGPSDisabledAlertToUser();
-//    }
-//  }
-//
-//  //This method configures the Alert Dialog box.
-//  private void showGPSDisabledAlertToUser() {
-//    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-//    alertDialogBuilder.setMessage("Enable GPS to use application")
-//            .setCancelable(false)
-//            .setPositiveButton("Enable GPS",
-//                    new DialogInterface.OnClickListener() {
-//                      public void onClick(DialogInterface dialog, int id) {
-//                        Intent callGPSSettingIntent = new Intent(
-//                                android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-//                        startActivity(callGPSSettingIntent);
-//                      }
-//                    });
-//    alertDialogBuilder.setNegativeButton("Cancel",
-//            new DialogInterface.OnClickListener() {
-//              public void onClick(DialogInterface dialog, int id) {
-//                dialog.cancel();
-//              }
-//            });
-//    AlertDialog alert = alertDialogBuilder.create();
-//    alert.show();
-//  }
-//
 }

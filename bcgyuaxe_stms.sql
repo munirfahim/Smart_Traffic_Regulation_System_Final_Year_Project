@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Apr 21, 2020 at 03:45 AM
--- Server version: 10.3.16-MariaDB
--- PHP Version: 7.3.12
+-- Generation Time: Oct 04, 2020 at 01:17 PM
+-- Server version: 5.7.31-cll-lve
+-- PHP Version: 7.4.10
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -19,7 +19,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `id12991193_nodemculog`
+-- Database: `bcgyuaxe_stms`
 --
 
 -- --------------------------------------------------------
@@ -31,21 +31,22 @@ SET time_zone = "+00:00";
 CREATE TABLE `Bus` (
   `bid` int(255) NOT NULL,
   `Dev_ID` int(255) NOT NULL,
-  `L_No` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
-  `Issuing_Auth` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `L_No` varchar(30) NOT NULL,
+  `Issuing_Auth` varchar(30) NOT NULL,
   `Fitness_Exp` date NOT NULL,
   `R_Perm_Exp` date NOT NULL,
-  `C_Driver` varchar(30) COLLATE utf8_unicode_ci DEFAULT '0',
-  `VType` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
-  `Bus_Image` varchar(255) COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+  `C_Driver` varchar(30) DEFAULT '0',
+  `VType` varchar(30) NOT NULL,
+  `Bus_Image` varchar(255) NOT NULL,
+  `route_name` varchar(255) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `Bus`
 --
 
-INSERT INTO `Bus` (`bid`, `Dev_ID`, `L_No`, `Issuing_Auth`, `Fitness_Exp`, `R_Perm_Exp`, `C_Driver`, `VType`, `Bus_Image`) VALUES
-(1, 123, 'GA-12-3568', 'Dhaka Metro', '2021-01-21', '2021-01-01', '0', 'Heavy', 'Bus1.jpg');
+INSERT INTO `Bus` (`bid`, `Dev_ID`, `L_No`, `Issuing_Auth`, `Fitness_Exp`, `R_Perm_Exp`, `C_Driver`, `VType`, `Bus_Image`, `route_name`) VALUES
+(1, 123, 'GA-12-3568', 'Dhaka Metro', '2021-01-21', '2021-01-01', '0', 'Heavy', 'Bus1.jpg', 'route 1');
 
 -- --------------------------------------------------------
 
@@ -55,19 +56,19 @@ INSERT INTO `Bus` (`bid`, `Dev_ID`, `L_No`, `Issuing_Auth`, `Fitness_Exp`, `R_Pe
 
 CREATE TABLE `Driver` (
   `did` int(255) NOT NULL,
-  `L_No` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
-  `Name` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `L_No` varchar(20) NOT NULL,
+  `Name` varchar(30) NOT NULL,
   `DOB` date NOT NULL,
-  `BloodGroup` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
-  `F_Name` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `BloodGroup` varchar(30) NOT NULL,
+  `F_Name` varchar(30) NOT NULL,
   `L_Issue_D` date NOT NULL,
   `L_Val_D` date NOT NULL,
-  `Issuing_Auth` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
-  `Image` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
-  `Signature` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
-  `Address` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
-  `V_Type` varchar(30) COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+  `Issuing_Auth` varchar(30) NOT NULL,
+  `Image` varchar(30) NOT NULL,
+  `Signature` varchar(30) NOT NULL,
+  `Address` varchar(30) NOT NULL,
+  `V_Type` varchar(30) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `Driver`
@@ -92,7 +93,7 @@ CREATE TABLE `logs` (
   `TimeOut` time DEFAULT NULL,
   `DateIn` date DEFAULT NULL,
   `DateOut` date DEFAULT NULL,
-  `status` int(255) DEFAULT 0
+  `status` int(255) DEFAULT '0'
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 --
@@ -142,6 +143,31 @@ INSERT INTO `logs` (`id`, `Dev_ID`, `V_License`, `Driver_ID`, `TimeIn`, `TimeOut
 (303, 123, 'GA-12-3568', '14453526', '03:30:16', '03:30:30', '2020-04-21', '2020-04-21', 1),
 (304, 123, 'GA-12-3568', '2282187242', '03:30:30', '03:30:45', '2020-04-21', '2020-04-21', 1);
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `route`
+--
+
+CREATE TABLE `route` (
+  `route_id` int(255) NOT NULL,
+  `Route_Name` varchar(255) NOT NULL,
+  `Stop 1` varchar(255) DEFAULT NULL,
+  `Stop 2` varchar(255) DEFAULT NULL,
+  `Stop 3` varchar(255) DEFAULT NULL,
+  `Stop 4` varchar(255) DEFAULT NULL,
+  `Stop 5` varchar(255) DEFAULT NULL,
+  `Stop 6` varchar(255) DEFAULT NULL,
+  `Stop 7` varchar(255) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `route`
+--
+
+INSERT INTO `route` (`route_id`, `Route_Name`, `Stop 1`, `Stop 2`, `Stop 3`, `Stop 4`, `Stop 5`, `Stop 6`, `Stop 7`) VALUES
+(1, 'route 1', 'Azampur Local Bus Stop', 'Rajlakshmi Bus Stop', 'Jasimuddin Bus Stop', 'Kawla Railgate Bus Station', 'Khilkhet South Bus Stop', NULL, NULL);
+
 --
 -- Indexes for dumped tables
 --
@@ -167,6 +193,13 @@ ALTER TABLE `logs`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `route`
+--
+ALTER TABLE `route`
+  ADD PRIMARY KEY (`route_id`),
+  ADD UNIQUE KEY `Route_Name` (`Route_Name`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -187,6 +220,12 @@ ALTER TABLE `Driver`
 --
 ALTER TABLE `logs`
   MODIFY `id` int(6) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=305;
+
+--
+-- AUTO_INCREMENT for table `route`
+--
+ALTER TABLE `route`
+  MODIFY `route_id` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

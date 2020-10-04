@@ -12,7 +12,7 @@
     <meta name="description" content="Cheap flats rooms accommodation inside Dhaka">
 	 <meta name="keywords" content="Flat, Rent, Dhaka">
   	<meta name="author" content="Sirajum Munir Fahim">
-	<title>ToLet - Find Your Home</title>
+	<title>Log- Smart Traffic Regulation System</title>
 	<script src="js/jquery-1.10.2.min.js"></script>
     <script src="js/jquery-ui.js"></script>
     <script src="js/bootstrap.min.js"></script>
