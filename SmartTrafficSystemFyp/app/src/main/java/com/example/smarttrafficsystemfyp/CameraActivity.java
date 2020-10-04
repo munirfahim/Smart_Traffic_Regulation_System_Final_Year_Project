@@ -31,6 +31,8 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.media.Image;
@@ -68,7 +70,9 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -81,9 +85,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 public abstract class CameraActivity extends AppCompatActivity
-    implements OnImageAvailableListener,
+        implements OnImageAvailableListener,
         Camera.PreviewCallback,
         View.OnClickListener {
   public static final int DEFAULT_LOCATION_INTERVAL = 1000 * 10;
@@ -110,11 +115,11 @@ public abstract class CameraActivity extends AppCompatActivity
   private TextView Bus_License, RP_exp, F_exp, D_Name, D_License, D_BG, D_Lic_Issue, Issue_Auth, Father_name, DOB, Vehicle_Type;
   private ImageView Driver_Image;
 
-//  //Maps Codes with Speeding
+  //  //Maps Codes with Speeding
 //  LocationService myService;
 //  static boolean status;
 //  LocationManager locationManager;
-  static TextView dist, time, speed, lat, lon, alt, accuracy;
+  static TextView Cur_loc, time, speed, lat, lon, alt, accuracy;
 //  //Button start, pause, stop;
 //  static long startTime, endTime;
 //  //ImageView image;
@@ -158,16 +163,15 @@ public abstract class CameraActivity extends AppCompatActivity
 //  private BottomSheetBehavior<LinearLayout> sheetBehavior;
 
   protected TextView frameValueTextView, cropValueTextView, inferenceTimeTextView;
-//  protected ImageView bottomSheetArrowImageView;
+  //  protected ImageView bottomSheetArrowImageView;
 //  private ImageView plusImageView, minusImageView;
 //  private SwitchCompat apiSwitchCompat;
 //  private TextView threadsTextView;
   //This is the location
   LocationRequest locationRequest;
+  LocationCallback locationCallback;
 
   FusedLocationProviderClient fusedLocationProviderClient;
-
-
 
 
   @Override
@@ -189,20 +193,22 @@ public abstract class CameraActivity extends AppCompatActivity
 
 
     Bus_License = (TextView) findViewById(R.id.License);
-    RP_exp =(TextView) findViewById(R.id.routepermit);
-    F_exp =(TextView) findViewById(R.id.fitness);
-    D_Name =(TextView) findViewById(R.id.drivername);
-    D_License=(TextView) findViewById(R.id.driverLicense);
-    D_BG=(TextView) findViewById(R.id.bloodgrp);
-    D_Lic_Issue=(TextView) findViewById(R.id.lcsIssuedate);
-    Issue_Auth=(TextView) findViewById(R.id.issueAuthority);
-    Father_name=(TextView) findViewById(R.id.fatherName);
-    DOB=(TextView) findViewById(R.id.address);
-    Vehicle_Type=(TextView) findViewById(R.id.vehicletype);
+    RP_exp = (TextView) findViewById(R.id.routepermit);
+    F_exp = (TextView) findViewById(R.id.fitness);
+    D_Name = (TextView) findViewById(R.id.drivername);
+    D_License = (TextView) findViewById(R.id.driverLicense);
+    D_BG = (TextView) findViewById(R.id.bloodgrp);
+    D_Lic_Issue = (TextView) findViewById(R.id.lcsIssuedate);
+    Issue_Auth = (TextView) findViewById(R.id.issueAuthority);
+    Father_name = (TextView) findViewById(R.id.fatherName);
+    DOB = (TextView) findViewById(R.id.address);
+    Vehicle_Type = (TextView) findViewById(R.id.vehicletype);
     Driver_Image = (ImageView) findViewById(R.id.driver);
 
-    dist = (TextView) findViewById(R.id.Distance);
+    Cur_loc = (TextView) findViewById(R.id.Current_Location);
     speed = (TextView) findViewById(R.id.Speed);
+
+
 //
 //    //Get location and speed setup
 //    checkGps();
@@ -223,15 +229,41 @@ public abstract class CameraActivity extends AppCompatActivity
 //    locate.setMessage("Getting Location...");
 //    locate.show();
 //
-    
+
     locationRequest = new LocationRequest();
-    
+
     locationRequest.setInterval(DEFAULT_LOCATION_INTERVAL);
-    
+
     locationRequest.setFastestInterval(DEFAULT_FASTEST_INTERVAL);
 
     locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
+    locationCallback = new LocationCallback() {
+
+      @Override
+      public void onLocationResult(LocationResult locationResult) {
+        super.onLocationResult(locationResult);
+
+        Location location = locationResult.getLastLocation();
+        updateUIValues(location);
+      }
+    };
+
+
+    updateGPS();
+
+    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+      // TODO: Consider calling
+      //    ActivityCompat#requestPermissions
+      // here to request the missing permissions, and then overriding
+      //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+      //                                          int[] grantResults)
+      // to handle the case where the user grants the permission. See the documentation
+      // for ActivityCompat#requestPermissions for more details.
+      return;
+    }
+    fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
+    updateGPS();
 
 
     
@@ -789,7 +821,11 @@ public abstract class CameraActivity extends AppCompatActivity
       fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
         @Override
         public void onSuccess(Location location) {
-          updateUIValues(location);
+          if(location !=null){
+            updateUIValues(location);
+          }
+
+
 
         }
       });
@@ -802,18 +838,23 @@ public abstract class CameraActivity extends AppCompatActivity
   }
 
   private void updateUIValues(Location location){
-      dist.setText(String.valueOf(location.getLatitude()));
+    Geocoder geocoder = new Geocoder(CameraActivity.this);
+
+    try{
+      List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+      Cur_loc.setText("Current location: "+ addresses.get(0).getAddressLine(0));
+    }
+    catch (Exception e){
+      Cur_loc.setText("Current Location: "+ String.valueOf(location.getLatitude())+" "+ String.valueOf(location.getLongitude()));
+    }
 
 
-      if(location.hasAltitude()){
-
-      }
-      else{
-
-      }
 
       if(location.hasSpeed()){
-        speed.setText(String.valueOf(location.getSpeed()));
+        speed.setText("Speed: "+String.valueOf(location.getSpeed()));
+      }
+      else{
+        speed.setText("Unavailable");
       }
 
   }

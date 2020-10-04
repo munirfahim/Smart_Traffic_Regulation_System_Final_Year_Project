@@ -90,20 +90,20 @@
         app:layout_constraintVertical_bias="0.615" />
 
     <TextView
-        android:id="@+id/Distance"
+        android:id="@+id/Current_Location"
         android:layout_width="367dp"
-        android:layout_height="33dp"
+        android:layout_height="63dp"
         android:text=""
         android:textAlignment="center"
         android:textColor="#FFFFFF"
-        android:textSize="26sp"
+        android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.051"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.715" />
+        app:layout_constraintVertical_bias="0.415" />
 
     <TextView
         android:id="@+id/bloodgrp"
@@ -257,7 +257,7 @@
             android:layout_height="40dp"
             android:text=""
             android:textAlignment="center"
-            android:textColor="#FFFFFF"
+            android:textColor="#FF0000"
             android:textSize="32sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
