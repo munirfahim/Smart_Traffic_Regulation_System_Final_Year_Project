@@ -18,23 +18,16 @@ import android.graphics.Paint.Cap;
 import android.graphics.Paint.Join;
 import android.graphics.Paint.Style;
 import android.graphics.RectF;
-import android.os.CountDownTimer;
-import android.os.strictmode.Violation;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.util.TypedValue;
-import android.view.View;
-import android.widget.TextView;
 
-import com.example.smarttrafficsystemfyp.Fine_Gen;
-import com.example.smarttrafficsystemfyp.R;
 import com.example.smarttrafficsystemfyp.env.BorderedText;
 import com.example.smarttrafficsystemfyp.env.ImageUtils;
 import com.example.smarttrafficsystemfyp.env.Logger;
 import com.example.smarttrafficsystemfyp.tflite.Classifier.Recognition;
 
 
-import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -213,7 +206,7 @@ public class MultiBoxTracker {
 
   public static class TrackedRecognition {
     RectF location;
-    float detectionConfidence;
+    public float detectionConfidence;
     int color;
     public String title;
 

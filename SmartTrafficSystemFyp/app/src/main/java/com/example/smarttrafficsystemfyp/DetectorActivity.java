@@ -26,6 +26,14 @@ import android.util.TypedValue;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.smarttrafficsystemfyp.customview.OverlayView;
 import com.example.smarttrafficsystemfyp.customview.OverlayView.DrawCallback;
 import com.example.smarttrafficsystemfyp.env.BorderedText;
@@ -34,11 +42,17 @@ import com.example.smarttrafficsystemfyp.env.Logger;
 import com.example.smarttrafficsystemfyp.tflite.Classifier;
 import com.example.smarttrafficsystemfyp.tflite.TFLiteObjectDetectionAPIModel;
 import com.example.smarttrafficsystemfyp.tracking.MultiBoxTracker;
+import com.squareup.picasso.Picasso;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * An activity that uses a TensorFlowMultiBoxDetector and ObjectTracker to detect and then track
@@ -82,6 +96,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private MultiBoxTracker tracker;
 
   private BorderedText borderedText;
+
+  public Bitmap Current_Processing_Image;
 
   @Override
   public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -222,12 +238,15 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                   MultiBoxTracker.TrackedRecognition detection = detections.get(i);
                   if(atBusStop){
                     if (detection.title.contains("bus")||detection.title.contains("truck")||detection.title.contains("car")) {
-                      detection(detection.title);
+
+                      detection(detection.title, detection.detectionConfidence, cropCopyBitmap);
+
                     }
                   }
                   else{
                     if (detection.title.contains("person")) {
-                        detection(detection.title);
+                        detection(detection.title, detection.detectionConfidence, cropCopyBitmap);
+
                     }
                   }
 
@@ -277,11 +296,24 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     runInBackground(() -> detector.setNumThreads(numThreads));
   }
 
-  public void detection(String detection_title){
+  public void detection(String detection_title, float detection_cof, Bitmap image){
     detected_flag = true;
-    Fine_Gen new_fine = new Fine_Gen();
-    new_fine.setViolation_type(detection_title);
-    new_fine.setViolation_time(Calendar.getInstance().getTime().toString());
+    Violation_Server new_violation = new Violation_Server();
+    new_violation.setBus_device_id(BUS_DEVICE_ID);
+    new_violation.setCurrent_driver(CURRENT_DRIVER);
+    new_violation.setViolation_confidence(String.valueOf(detection_cof));
+    new_violation.setViolation_name(detection_title);
+    new_violation.setViolation_image(image);
+    new_violation.setViolation_time(Calendar.getInstance().getTime().toString());
+    new_violation.setLocation_name(current_location_name);
+    new_violation.setLatitude(String.valueOf(current_location.getLatitude()));
+    new_violation.setLongitude(String.valueOf(current_location.getLatitude()));
+    if(current_location.hasSpeed()) {
+      new_violation.setSpeed(String.valueOf(current_location.getSpeed()));
+    }
+    else
+      new_violation.setSpeed("0");
+    new_violation.setLocation_accuracy(String.valueOf(current_location.getAccuracy()));
     Violation_Error = findViewById(R.id.violation);
     Violation_Error.setText("Door Violation");
     new CountDownTimer(20000, 1000) {
@@ -298,5 +330,62 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
       }
 
     }.start();
+
+    send_Bus_Stop_Detection(new_violation);
+
+  }
+
+  private void send_Bus_Stop_Detection(Violation_Server violation){
+    String imgstring = violation.getStringImage(violation.getViolation_image());
+
+    RequestQueue queue = Volley.newRequestQueue(this);
+    String url ="http://fahim.educationhost.cloud/SET_Violation.php";
+
+    // Request a string response from the provided URL.
+    StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+            new Response.Listener<String>() {
+              @Override
+              public void onResponse(String response) {
+                // Display the first 500 characters of the response string.
+                Violation_Error.setText(response);
+              }
+            }, new Response.ErrorListener() {
+      @Override
+      public void onErrorResponse(VolleyError volleyError) {
+        if (volleyError != null && volleyError.getMessage() != null) {
+          //Toast.makeText(this, volleyError.getMessage(), Toast.LENGTH_LONG).show();
+        } else {
+          //Toast.makeText(CameraActivity.this, "Something went wrong", Toast.LENGTH_LONG).show();
+
+        }
+      }
+    }){
+      @Override
+      protected Map<String, String> getParams() {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("violation_name", violation.getViolation_name());
+        params.put("bus_id", violation.getBus_device_id());
+        params.put("driver_id", violation.getCurrent_driver());
+        params.put("latitude", violation.getLatitude());
+        params.put("loc_accuracy", violation.getLocation_accuracy());
+        params.put("longitude", violation.getLongitude());
+        params.put("loc_name", violation.getLocation_name());
+        params.put("speed", violation.getSpeed());
+        params.put("imagecode", imgstring);
+        params.put("time", violation.getViolation_time());
+        params.put("confidence", violation.getViolation_confidence());
+        return params;
+      }
+    };
+
+    RetryPolicy mRetryPolicy = new DefaultRetryPolicy(
+            0,
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+
+    stringRequest.setRetryPolicy(mRetryPolicy);
+
+    // Add the request to the RequestQueue.
+    queue.add(stringRequest);
   }
 }

@@ -21,8 +21,8 @@ const char *ssid = "Virus";  //ENTER YOUR WIFI SETTINGS
 const char *password = "17353453";
 
 //Web/Server address to read/write from 
-const char *host = "cstcs.000webhostapp.com";   //IP address of server
-
+//const char *host = "cstcs.000webhostapp.com";   //IP address of server
+const char *host = "fahim.educationhost.cloud";
 String getData ,Link;
 String CardID="";
 String DeviceID="123";
@@ -98,7 +98,7 @@ void loop() {
   
   //GET Data
   getData = "?Dev_ID="+DeviceID+"&L_No="+CardID;  //Note "?" added at front
-  Link = "http://cstcs.000webhostapp.com/postdemo.php" + getData;
+  Link = "http://fahim.educationhost.cloud//postdemo.php" + getData;
   
   http.begin(Link);
   

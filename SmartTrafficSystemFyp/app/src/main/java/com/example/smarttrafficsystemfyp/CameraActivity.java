@@ -46,9 +46,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
@@ -68,7 +70,9 @@ import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class CameraActivity extends AppCompatActivity
         implements OnImageAvailableListener,
@@ -108,6 +112,9 @@ public abstract class CameraActivity extends AppCompatActivity
 
   String[] route_stops = new String[20];
   public boolean atBusStop = false;
+  public String CURRENT_DRIVER = "0";
+  public Location current_location;
+  public String current_location_name;
 
 
   @Override
@@ -209,11 +216,11 @@ public abstract class CameraActivity extends AppCompatActivity
 
                   }
                   else{
-                    String Current_Driver = json.getString("C_Driver");
-                    D_License.setText("License No: "+Current_Driver);
+                    CURRENT_DRIVER = json.getString("C_Driver");
+                    D_License.setText("License No: "+CURRENT_DRIVER);
                     String route_name = json.getString("route_name");
                     getRouteDetails(route_name);
-                    getDriverDetails(Current_Driver);
+                    getDriverDetails(CURRENT_DRIVER);
 
                     //Fetching Driver Details
 
@@ -651,6 +658,7 @@ public abstract class CameraActivity extends AppCompatActivity
 
                     if(json.getString("Stop "+String.valueOf(i+1))!=null)
                     route_stops[i] = json.getString("Stop "+String.valueOf(i+1));
+                    next_stop.setText("Next Stop: "+ route_stops[0]);
 
                   }
 
@@ -697,6 +705,8 @@ public abstract class CameraActivity extends AppCompatActivity
     try{
       List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
       Cur_loc.setText("Current location: "+ addresses.get(0).getAddressLine(0));
+      current_location = location;
+      current_location_name = addresses.get(0).getAddressLine(0);
       for(int i=0; route_stops[i]!=null; i++){
         if(addresses.get(0).getAddressLine(0).contains(route_stops[i])){
             atBusStop = true;
@@ -729,28 +739,100 @@ public abstract class CameraActivity extends AppCompatActivity
       if(location.hasSpeed()){
         speed.setText("Speed: "+String.valueOf(location.getSpeed()));
         if(location.getSpeed()>SPEED_LIMIT && speedviolationdetected==false){
-          speedviolationdetected = true;
-          speed_violation.setText("Speed Violation Detected");
-          new CountDownTimer(10000, 1000) {
-
-            public void onTick(long millisUntilFinished) {
-
-              speed_violation.setText("Speed violation, waiting " + millisUntilFinished / 1000);
-              //here you can have your logic to set text to edittext
-            }
-
-            public void onFinish() {
-              speed_violation.setText("");
-              speedviolationdetected = false;
-            }
-
-          }.start();
+          speed_violation();
         }
       }
       else{
-        speed.setText("Unavailable");
+        speed.setText("Speed: Unavailable");
       }
 
+
+
+  }
+
+  public void speed_violation(){
+    speedviolationdetected = true;
+
+    Violation_Server new_violation = new Violation_Server();
+    new_violation.setBus_device_id(BUS_DEVICE_ID);
+    new_violation.setCurrent_driver(CURRENT_DRIVER);
+    new_violation.setViolation_name("Speed_Violation");
+    new_violation.setViolation_time(Calendar.getInstance().getTime().toString());
+    new_violation.setLocation_name(current_location_name);
+    new_violation.setLatitude(String.valueOf(current_location.getLatitude()));
+    new_violation.setLongitude(String.valueOf(current_location.getLatitude()));
+    new_violation.setSpeed(String.valueOf(current_location.getSpeed()));
+    new_violation.setLocation_accuracy(String.valueOf(current_location.getAccuracy()));
+
+    speed_violation.setText("Speed Violation Detected");
+    new CountDownTimer(10000, 1000) {
+
+      public void onTick(long millisUntilFinished) {
+
+        speed_violation.setText("Speed violation, waiting " + millisUntilFinished / 1000);
+        //here you can have your logic to set text to edittext
+      }
+
+      public void onFinish() {
+        speed_violation.setText("");
+        speedviolationdetected = false;
+      }
+
+    }.start();
+
+    send_Speed_Detection(new_violation);
+  }
+
+  private void send_Speed_Detection(Violation_Server violation){
+    RequestQueue queue = Volley.newRequestQueue(this);
+    String url ="http://fahim.educationhost.cloud/SET_Violation.php";
+
+    // Request a string response from the provided URL.
+    StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+            new Response.Listener<String>() {
+              @Override
+              public void onResponse(String response) {
+                // Display the first 500 characters of the response string.
+                Toast.makeText(CameraActivity.this, response, Toast.LENGTH_LONG).show();
+
+
+              }
+            }, new Response.ErrorListener() {
+      @Override
+      public void onErrorResponse(VolleyError volleyError) {
+        if (volleyError != null && volleyError.getMessage() != null) {
+          //Toast.makeText(this, volleyError.getMessage(), Toast.LENGTH_LONG).show();
+        } else {
+          //Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG).show();
+
+        }
+      }
+    }){
+      @Override
+      protected Map<String, String> getParams() {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("violation_name", violation.getViolation_name());
+        params.put("bus_id", violation.getBus_device_id());
+        params.put("driver_id", violation.getCurrent_driver());
+        params.put("latitude", violation.getLatitude());
+        params.put("loc_accuracy", violation.getLocation_accuracy());
+        params.put("longitude", violation.getLongitude());
+        params.put("loc_name", violation.getLocation_name());
+        params.put("speed", violation.getSpeed());
+        params.put("time", violation.getViolation_time());
+        return params;
+      }
+    };
+
+    RetryPolicy mRetryPolicy = new DefaultRetryPolicy(
+            0,
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+
+    stringRequest.setRetryPolicy(mRetryPolicy);
+
+    // Add the request to the RequestQueue.
+    queue.add(stringRequest);
   }
 
 }

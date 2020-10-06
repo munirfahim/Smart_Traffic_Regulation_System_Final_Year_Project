@@ -5,7 +5,7 @@
     /* $password = "Fahim1996";			//if your phpmyadmin has a password put it here.(default is "root") */
     $username = "bcgyuaxe_test";		//put your phpmyadmin username.(default is "root")
     $password = "4daeu4Dsj";			//if your phpmyadmin has a password put it here.(default is "root")
-    $dbname = "bcgyuaxe_stms";
+    global $dbname = "bcgyuaxe_stms";
     /*
     $servername = "remotemysql.com";
     $username = "UtHKnOh84N";		//put your phpmyadmin username.(default is "root")
