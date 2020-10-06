@@ -66,16 +66,18 @@
     </header> 
     <div class="container">
         <div class="row">
- 		<br><br><br><br>
- 		<h1 align="center">Login To Your Account</h1>
-      <form class="form" action="login.php" method="post" enctype="multipart/form-data" autocomplete="off">
+        <div class="body-content">
+      <div class="module">
+      <h1>Login To Your Account</h1>
+      <form class="form" action="index.php" method="post" enctype="multipart/form-data" autocomplete="off">
       <div class="alert alert-error"><?= $_SESSION['loginmsg'] ?></div>
       <input type="text" placeholder="User Name" name="username" required />
-      <br>
       <input type="password" placeholder="Password" name="password" autocomplete="new-password" required />
-      <br><br><br>
+      <br>
       <input type="submit" value="Login" name="login" class="btn btn-block btn-primary" />
-      </form> 
+      </form>
+      </div>
+      </div>
 		
         </div>
 

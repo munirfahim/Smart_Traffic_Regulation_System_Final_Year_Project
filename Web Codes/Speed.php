@@ -56,9 +56,9 @@
         <nav>
           <ul>
             <li><a href="Log.php">Driver Log</a></li>
-            <li class="current">
+            <li>
             	<a href="Bus_Stop_Violation.php">Bus Stop Violation</a></li>
-                <li><a href="Speed.php">Speed Violation</a></li>
+                <li  class="current"><a href="Speed.php">Speed Violation</a></li>
                 <li><a href="Logout.php">Logout</a></li>
           </ul>
          </nav>
@@ -91,7 +91,7 @@
   $(document).ready(function(){
     setInterval(function(){
       $.ajax({
-        url: "load_bus_stop_violation.php"
+        url: "load_speed.php"
         }).done(function(data) {
         $('#Log').html(data);
       });

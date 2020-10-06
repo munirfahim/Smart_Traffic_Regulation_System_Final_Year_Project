@@ -1,5 +1,15 @@
 
+ <?php
 
+    session_start();
+    //include('database_connection.php');
+    //connection variables
+    
+    if(!isset($_SESSION['username'])) {
+                    header("location: index.php");
+                }
+
+?>
 
 
 
@@ -42,9 +52,20 @@
 </head>
 <body>
 	<header>
-      <h3 style="color:skyblue" align="center">Smart Traffic Regulation System</h1>
-      
-
+       <div class="container">
+         <div id="branding">
+          <h1><span class="highlight">Smart Traffic Monitoring System</span></h1>
+         </div>
+        <nav>
+          <ul>
+            <li class="current"><a href="Log.php">Driver Log</a></li>
+            <li>
+            	<a href="Bus_Stop_Violation.php">Bus Stop Violation</a></li>
+                <li><a href="Speed.php">Speed Violation</a></li>
+                <li><a href="Logout.php">Logout</a></li>
+          </ul>
+         </nav>
+       </div>
     </header> 
 
     <div class="container">

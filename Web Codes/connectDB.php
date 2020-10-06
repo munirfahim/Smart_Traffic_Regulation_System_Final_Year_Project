@@ -1,13 +1,16 @@
 <?php
 /* Database connection settings */
 	$servername = "localhost";
-    /* $username = "bcgyuaxe_stms";		//put your phpmyadmin username.(default is "root") */
-    /* $password = "Fahim1996";			//if your phpmyadmin has a password put it here.(default is "root") */
+    $username = "bcgyuaxe_stms";		//put your phpmyadmin username.(default is "root") 
+    $password = "Fahim1996";			//if your phpmyadmin has a password put it here.(default is "root") 
+    /*
     $username = "bcgyuaxe_test";		//put your phpmyadmin username.(default is "root")
     $password = "4daeu4Dsj";			//if your phpmyadmin has a password put it here.(default is "root")
-    global $dbname = "bcgyuaxe_stms";
-    /*
-    $servername = "remotemysql.com";
+    */
+    $dbname = "bcgyuaxe_stms"; 
+    
+    
+   /* $servername = "remotemysql.com";
     $username = "UtHKnOh84N";		//put your phpmyadmin username.(default is "root")
     $password = "ZcPCXVQm03";			//if your phpmyadmin has a password put it here.(default is "root")
     $dbname = "UtHKnOh84N";
