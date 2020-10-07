@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "168019427818",
+    "firebase_url": "https://nodemcu-d4115.firebaseio.com",
+    "project_id": "nodemcu-d4115",
+    "storage_bucket": "nodemcu-d4115.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:168019427818:android:c8716752c527a8536a3293",
+        "android_client_info": {
+          "package_name": "com.example.smarttrafficsystemfyp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "168019427818-1i677c1b585ebeb1mb635j1pjk9mgkuf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.smarttrafficsystemfyp",
+            "certificate_hash": "6365ea2e2a1d15e8ad43d4727d4def5c3ebd4708"
+          }
+        },
+        {
+          "client_id": "168019427818-3ao36nmm3t0upt7ojcsibr4ek3t8ajdc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGLjMYXd1LRRwveBdoaVJYpkSdMmPgAFM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "168019427818-3ao36nmm3t0upt7ojcsibr4ek3t8ajdc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

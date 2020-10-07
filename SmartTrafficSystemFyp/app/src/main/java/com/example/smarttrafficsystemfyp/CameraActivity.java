@@ -34,10 +34,12 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Trace;
+import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -63,6 +65,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import com.example.smarttrafficsystemfyp.env.ImageUtils;
 import com.example.smarttrafficsystemfyp.env.Logger;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
@@ -102,8 +109,8 @@ public abstract class CameraActivity extends AppCompatActivity
   private Runnable imageConverter;
   private TextView Bus_License, RP_exp, F_exp, D_Name, D_License, D_BG, D_Lic_Issue, Issue_Auth, Father_name, DOB, Vehicle_Type;
   private ImageView Driver_Image;
-
-  private TextView Cur_loc, speed, next_stop, current_time, speed_violation, at_where;
+  private ProgressBar progressBar;
+  private TextView Cur_loc, speed, next_stop, current_time, speed_violation, at_where, logout;
   LocationRequest locationRequest;
   LocationCallback locationCallback;
   private boolean speedviolationdetected = false;
@@ -111,7 +118,7 @@ public abstract class CameraActivity extends AppCompatActivity
   FusedLocationProviderClient fusedLocationProviderClient;
 
   String[] route_stops = new String[20];
-  public boolean atBusStop = false;
+  public boolean atBusStop = true;
   public String CURRENT_DRIVER = "0";
   public Location current_location;
   public String current_location_name;
@@ -149,7 +156,48 @@ public abstract class CameraActivity extends AppCompatActivity
     next_stop = (TextView) findViewById(R.id.next_stop);
     speed_violation = (TextView) findViewById(R.id.speed_violation);
     at_where = (TextView) findViewById(R.id.at_where);
+    logout = (TextView) findViewById(R.id.logout);
 
+
+    //Connecting to Firebase
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference reff = database.getReference("Dev_"+BUS_DEVICE_ID);
+
+    // Read from the database
+    reff.addValueEventListener(new ValueEventListener() {
+      @Override
+      public void onDataChange(DataSnapshot dataSnapshot) {
+        // This method is called once with the initial value and again
+        // whenever data at this location is updated.
+        String value = dataSnapshot.getValue(String.class);
+        if(!"0".equals(value)){
+          getDriverDetails(value);
+        }
+        else{
+          D_License.setText("License No: "+ value);
+          D_Name.setText("");
+          D_BG.setText("");
+          D_Lic_Issue.setText("");
+          Issue_Auth.setText("");
+          Father_name.setText("");
+          DOB.setText("");
+          Vehicle_Type.setText("");
+          D_Name.setText("No Current Driver");
+          D_License.setText("Scan Driving License To Login");
+          logout.setText("");
+
+          Driver_Image.setImageResource(android.R.color.transparent);
+
+        }
+        //Log.d(TAG, "Value is: " + value);
+      }
+
+      @Override
+      public void onCancelled(DatabaseError error) {
+        // Failed to read value
+        //Log.w(TAG, "Failed to read value.", error.toException());
+      }
+    });
 
     //Getting Location
 
@@ -211,16 +259,18 @@ public abstract class CameraActivity extends AppCompatActivity
                   RP_exp.setText("Route Permit Expiry: "+json.getString("R_Perm_Exp"));
                   F_exp.setText("Fitness Expiry: "+json.getString("Fitness_Exp"));
                   if(json.getString("C_Driver")=="0"){
-                    D_Name.setText("No Current Driver");
-                    D_License.setText("Scan Driving License To Login");
+//                    D_Name.setText("No Current Driver");
+//                    D_License.setText("Scan Driving License To Login");
+//                    logout.setText("");
 
                   }
                   else{
                     CURRENT_DRIVER = json.getString("C_Driver");
-                    D_License.setText("License No: "+CURRENT_DRIVER);
+//                    D_License.setText("License No: "+CURRENT_DRIVER);
                     String route_name = json.getString("route_name");
                     getRouteDetails(route_name);
-                    getDriverDetails(CURRENT_DRIVER);
+//                    getDriverDetails(CURRENT_DRIVER);
+//                    logout.setText("Scan Driving License to Logout");
 
                     //Fetching Driver Details
 
@@ -611,6 +661,7 @@ public abstract class CameraActivity extends AppCompatActivity
 
                 try {
                   JSONObject json = new JSONObject(response);
+                  D_License.setText("License No: " + Driver);
                   D_Name.setText(json.getString("Name"));
                   D_BG.setText("Blood Group: "+json.getString("BloodGroup"));
                   D_Lic_Issue.setText("License Issue Date: "+json.getString("L_Issue_D"));
@@ -618,7 +669,7 @@ public abstract class CameraActivity extends AppCompatActivity
                   Father_name.setText("Father's Name: "+json.getString("F_Name"));
                   DOB.setText("Date of Birth: "+json.getString("DOB"));
                   Vehicle_Type.setText("License Vehicle Type: "+json.getString("V_Type"));
-
+                  logout.setText("Scan Driving License to Logout");
                   //Getting Driver Image
                   String imageUri = "http://fahim.educationhost.cloud/image/"+json.getString("Image");
                   Picasso.get().load(imageUri).into(Driver_Image);
@@ -732,6 +783,7 @@ public abstract class CameraActivity extends AppCompatActivity
       atBusStop = false;
       at_where.setText("On-Route, No one allowed on Camera View");
       at_where.setTextColor(Color.RED);
+      Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
     }
 
 
@@ -760,7 +812,7 @@ public abstract class CameraActivity extends AppCompatActivity
     new_violation.setViolation_time(Calendar.getInstance().getTime().toString());
     new_violation.setLocation_name(current_location_name);
     new_violation.setLatitude(String.valueOf(current_location.getLatitude()));
-    new_violation.setLongitude(String.valueOf(current_location.getLatitude()));
+    new_violation.setLongitude(String.valueOf(current_location.getLongitude()));
     new_violation.setSpeed(String.valueOf(current_location.getSpeed()));
     new_violation.setLocation_accuracy(String.valueOf(current_location.getAccuracy()));
 
@@ -780,7 +832,7 @@ public abstract class CameraActivity extends AppCompatActivity
 
     }.start();
 
-    send_Speed_Detection(new_violation);
+//    send_Speed_Detection(new_violation);
   }
 
   private void send_Speed_Detection(Violation_Server violation){
@@ -793,8 +845,7 @@ public abstract class CameraActivity extends AppCompatActivity
               @Override
               public void onResponse(String response) {
                 // Display the first 500 characters of the response string.
-                Toast.makeText(CameraActivity.this, response, Toast.LENGTH_LONG).show();
-
+//                Toast.makeText(CameraActivity.this, response, Toast.LENGTH_LONG).show();
 
               }
             }, new Response.ErrorListener() {

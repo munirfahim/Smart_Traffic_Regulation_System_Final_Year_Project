@@ -1,6 +1,7 @@
 /*
 */
-
+#include <FirebaseArduino.h>
+#include <FirebaseError.h>
 #include <ESP8266WiFi.h>     //Include Esp library
 #include <WiFiClient.h> 
 #include <ESP8266WebServer.h>
@@ -13,6 +14,8 @@
 #define RST_PIN D3
 #define RedLed D1
 #define BlueLed D2
+#define FIREBASE_HOST "nodemcu-d4115.firebaseio.com"
+#define FIREBASE_AUTH "JXvZiuHXRXL8S0ugu1usnHhFxXRQpjSciGgapCEn"
 
 MFRC522 mfrc522(SS_PIN, RST_PIN); // Create MFRC522 instance.
 
@@ -55,6 +58,9 @@ void setup() {
   Serial.println("Connected");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());  //IP address assigned to your ESP
+  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+  Serial.print("Firebase Connection: ");
+  Serial.println(Firebase.success());
 
   pinMode(RedLed,OUTPUT);
   pinMode(BlueLed,OUTPUT);
@@ -78,6 +84,9 @@ void loop() {
     Serial.println("Connected");
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());  //IP address assigned to your ESP
+    Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+    Serial.print("Firebase Connection: ");
+    Serial.println(Firebase.success());
     
   }
   
@@ -128,6 +137,20 @@ void loop() {
   else if(payload == "login" || payload == "logout"){
     digitalWrite(BlueLed,HIGH);
     Serial.println("Blue on");
+    //int ID = int(CardID);
+    if(payload == "logout"){
+      Firebase.setString("Dev_123","0");
+    }
+    else{
+      Firebase.setString("Dev_123",CardID);
+    }
+    Serial.println(Firebase.success());
+    // handle error 
+  if (Firebase.failed()) { 
+      Serial.print("setting /number failed:"); 
+      Serial.println(Firebase.error());   
+      return; 
+  } 
     delay(500);  //Post Data at every 5 seconds
   }
   delay(500);

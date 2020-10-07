@@ -226,6 +226,37 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.85" />
 
+    <TextView
+        android:id="@+id/logout"
+        android:layout_width="290dp"
+        android:layout_height="26dp"
+        android:text=""
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.522"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.90" />
+
+    <TextView
+        android:id="@+id/call999"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:text="Call 999 to report discrepancy"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        android:textColor="#FF0000"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.522"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.98" />
+
 
     <TextView
         android:id="@+id/fitness"
@@ -336,6 +367,7 @@
         </FrameLayout>
 
     </FrameLayout>
+
 
 
 

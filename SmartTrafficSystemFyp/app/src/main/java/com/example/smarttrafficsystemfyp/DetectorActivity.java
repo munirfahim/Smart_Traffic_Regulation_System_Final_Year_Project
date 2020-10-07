@@ -18,6 +18,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.location.Location;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.CountDownTimer;
 import android.os.SystemClock;
@@ -68,7 +69,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private static final String TF_OD_API_LABELS_FILE = "labelmap.txt";
   private static final DetectorMode MODE = DetectorMode.TF_OD_API;
   // Minimum detection confidence to track a detection.
-  private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.5f;
+  private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.7f;
   private static final boolean MAINTAIN_ASPECT = false;
   private static final Size DESIRED_PREVIEW_SIZE = new Size(320, 320);
   private static final boolean SAVE_PREVIEW_BITMAP = false;
@@ -239,13 +240,17 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                   if(atBusStop){
                     if (detection.title.contains("bus")||detection.title.contains("truck")||detection.title.contains("car")) {
 
-                      detection(detection.title, detection.detectionConfidence, cropCopyBitmap);
+                      Location location = current_location;
+                      String location_name = current_location_name;
+                      detection(detection.title, detection.detectionConfidence, cropCopyBitmap, location, location_name);
 
                     }
                   }
                   else{
                     if (detection.title.contains("person")) {
-                        detection(detection.title, detection.detectionConfidence, cropCopyBitmap);
+                        Location location = current_location;
+                      String location_name = current_location_name;
+                        detection(detection.title, detection.detectionConfidence, cropCopyBitmap, location, location_name);
 
                     }
                   }
@@ -296,7 +301,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     runInBackground(() -> detector.setNumThreads(numThreads));
   }
 
-  public void detection(String detection_title, float detection_cof, Bitmap image){
+  public void detection(String detection_title, float detection_cof, Bitmap image, Location location, String location_name){
     detected_flag = true;
     Violation_Server new_violation = new Violation_Server();
     new_violation.setBus_device_id(BUS_DEVICE_ID);
@@ -305,15 +310,15 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     new_violation.setViolation_name(detection_title);
     new_violation.setViolation_image(image);
     new_violation.setViolation_time(Calendar.getInstance().getTime().toString());
-    new_violation.setLocation_name(current_location_name);
-    new_violation.setLatitude(String.valueOf(current_location.getLatitude()));
-    new_violation.setLongitude(String.valueOf(current_location.getLatitude()));
+    new_violation.setLocation_name(location_name);
+    new_violation.setLatitude(String.valueOf(location.getLatitude()));
+    new_violation.setLongitude(String.valueOf(location.getLongitude()));
     if(current_location.hasSpeed()) {
       new_violation.setSpeed(String.valueOf(current_location.getSpeed()));
     }
     else
       new_violation.setSpeed("0");
-    new_violation.setLocation_accuracy(String.valueOf(current_location.getAccuracy()));
+    new_violation.setLocation_accuracy(String.valueOf(location.getAccuracy()));
     Violation_Error = findViewById(R.id.violation);
     Violation_Error.setText("Door Violation");
     new CountDownTimer(20000, 1000) {
@@ -331,7 +336,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     }.start();
 
-    send_Bus_Stop_Detection(new_violation);
+//    send_Bus_Stop_Detection(new_violation);
 
   }
 
@@ -347,7 +352,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               @Override
               public void onResponse(String response) {
                 // Display the first 500 characters of the response string.
-                Violation_Error.setText(response);
+                //Violation_Error.setText(response);
               }
             }, new Response.ErrorListener() {
       @Override
